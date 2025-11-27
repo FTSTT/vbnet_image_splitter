@@ -256,9 +256,7 @@
 ![主界面](docs/screenshot-main.png)
 ![分割线示例](docs/screenshot-lines.png)
 ![导出设置与结果](docs/screenshot-export.png)
-```
 
----
 
 ## FAQ
 
