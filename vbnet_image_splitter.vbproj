@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <MyType>WindowsForms</MyType>
+    <RootNamespace>vbnet_image_splitter</RootNamespace>
+    <StartupObject>vbnet_image_splitter.Module1</StartupObject>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionStrict>Off</OptionStrict>
+    <OptionInfer>On</OptionInfer>
+    <OptionCompare>Binary</OptionCompare>
+    <ApplicationIcon>vbnet_image_splitter.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="vbnet_image_splitter.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="frmSplitter.Designer.vb">
+      <DependentUpon>frmSplitter.vb</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="frmSplitter.resx">
+      <DependentUpon>frmSplitter.vb</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

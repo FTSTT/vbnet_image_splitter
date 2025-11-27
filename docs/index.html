@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>vbnet_image_splitter - 图片分割标记工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="基于 VB.NET 的长图分割与标记工具，支持蓝线分割、删除区域、插入空白、导出 PNG/JPG 以及工程保存与恢复（含完整历史重放与原始高度校验）。">
+    <style>
+        :root {
+            --bg: #f9fafb;
+            --bg-alt: #ffffff;
+            --primary: #ff8a5c;
+            --primary-dark: #e36b3a;
+            --text: #1f2933;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #ffecd5, #f9fafb);
+            color: var(--text);
+        }
+
+        a {
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+
+        a:hover { text-decoration: underline; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(14px);
+            background: linear-gradient(to right, rgba(255, 244, 229, 0.95), rgba(255, 255, 255, 0.9));
+            border-bottom: 1px solid rgba(229, 231, 235, 0.7);
+        }
+
+        .nav {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-title {
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .nav-links a {
+            margin-left: 18px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-dark);
+        }
+
+        main {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2.7fr);
+            gap: 32px;
+            align-items: center;
+            margin: 12px 0 40px;
+        }
+
+        @media (max-width: 840px) {
+            .hero { grid-template-columns: minmax(0, 1fr); }
+        }
+
+        .hero-title {
+            font-size: 32px;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .hero-subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 22px;
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .hero-badge {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: rgba(255, 138, 92, 0.06);
+            color: var(--primary-dark);
+            border: 1px solid rgba(255, 138, 92, 0.3);
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-primary {
+            padding: 9px 18px;
+            border-radius: 999px;
+            border: none;
+            background: radial-gradient(circle at top left, #ffb38a, #ff8a5c);
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn-primary:hover {
+            background: radial-gradient(circle at top left, #ff9c6b, #e36b3a);
+        }
+
+        .btn-ghost {
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        .hero-card {
+            background: var(--bg-alt);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            padding: 16px 16px 18px;
+            border: 1px solid rgba(229, 231, 235, 0.9);
+        }
+
+        .hero-card-title {
+            font-size: 14px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .hero-card-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .hero-screenshot-placeholder {
+            width: 100%;
+            height: 220px;
+            border-radius: var(--radius-md);
+            border: 1px dashed #d4d4d8;
+            background: repeating-linear-gradient(
+                135deg,
+                #f9fafb,
+                #f9fafb 10px,
+                #f3f4f6 10px,
+                #f3f4f6 20px
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        section {
+            margin-bottom: 36px;
+        }
+
+        section h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        section p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        @media (max-width: 960px) {
+            .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 640px) {
+            .grid-3 { grid-template-columns: minmax(0, 1fr); }
+        }
+
+        .card {
+            background: var(--bg-alt);
+            border-radius: var(--radius-md);
+            padding: 14px 14px 16px;
+            border: 1px solid rgba(229, 231, 235, 0.9);
+        }
+
+        .card h3 {
+            margin: 0 0 6px;
+            font-size: 14px;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .shortcuts-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .shortcuts-table th,
+        .shortcuts-table td {
+            border: 1px solid #e5e7eb;
+            padding: 6px 8px;
+            text-align: left;
+        }
+
+        .shortcuts-table th {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        @media (max-width: 960px) {
+            .screenshots-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 640px) {
+            .screenshots-grid { grid-template-columns: minmax(0, 1fr); }
+        }
+
+        .screenshot-placeholder {
+            border-radius: var(--radius-md);
+            border: 1px dashed #d4d4d8;
+            background: #f9fafb;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .hero-screenshot-placeholder img,
+        .screenshot-placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        footer {
+            border-top: 1px solid #e5e7eb;
+            padding: 16px 20px 20px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="nav">
+        <div class="nav-title">vbnet_image_splitter</div>
+        <div class="nav-links">
+            <a href="#features">功能</a>
+            <a href="#screenshots">截图</a>
+            <a href="#usage">使用说明</a>
+            <a href="#download">下载</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <div>
+            <h1 class="hero-title">长图分割标记工具</h1>
+            <p class="hero-subtitle">
+                基于 VB.NET 的桌面工具，将整页长图按蓝线精准切分为多张图片。
+                支持蓝线标记、删除区域、插入空白、缩放导航、导出 PNG/JPG，以及工程保存与恢复
+                （包含完整动作历史重放与原始高度校验），适合处理漫画、教程长图、条漫截屏等。
+            </p>
+            <div class="hero-badges">
+                <span class="hero-badge">Windows • VB.NET WinForms</span>
+                <span class="hero-badge">蓝线分割 / 删除区域</span>
+                <span class="hero-badge">插入空白 • 撤销重做</span>
+                <span class="hero-badge">PNG/JPG 导出 • 工程恢复</span>
+            </div>
+            <div class="hero-actions">
+                <button class="btn-primary" onclick="window.location.href='#download'">前往下载</button>
+                <button class="btn-ghost" onclick="window.location.href='#usage'">查看使用说明</button>
+            </div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-card-title">主界面示意</div>
+            <div class="hero-card-subtitle">
+                在这里预览长图、添加蓝线、删除区域、插入空白并导出分块。顶部工具栏和导出选项支持快捷操作。
+            </div>
+            <div class="hero-screenshot-placeholder">
+                <img src="screenshot-main.png" alt="主界面" />
+            </div>
+        </div>
+    </section>
+
+    <section id="features">
+        <h2>功能特性</h2>
+        <p>围绕“长图按横向分割线切图”这一核心场景，工具提供完整的标线、编辑、导出与工程管理能力。</p>
+        <div class="grid-3">
+            <div class="card">
+                <h3>蓝线标记与分割</h3>
+                <p>左键添加蓝线，默认保留顶部 Y=0 蓝线。右键单击可删除区域，右键拖拽可高亮并批量删除选区内蓝线。</p>
+            </div>
+            <div class="card">
+                <h3>区域删除与插入空白</h3>
+                <p>右键删除蓝线之间区域，中键配合“插入空白高度”在任意位置插入纯白空白，所有动作可撤销/重做。</p>
+            </div>
+            <div class="card">
+                <h3>导出 PNG/JPG</h3>
+                <p>支持导出 PNG 和 JPG，JPG 可配置质量值，支持全局统一宽度或按区域最大宽度导出。</p>
+            </div>
+            <div class="card">
+                <h3>Trim 与 Padding</h3>
+                <p>可自动去除分块四边纯白边缘，并为左右上下分别增加白边，以像素为单位精细控制导出尺寸。</p>
+            </div>
+            <div class="card">
+                <h3>纯白分块检测</h3>
+                <p>导出前检测纯白分块并提示是否跳过，避免生成无意义空白图片。</p>
+            </div>
+            <div class="card">
+                <h3>工程与历史重放</h3>
+                <p>工程文件保存图片列表与完整动作历史（含插入空白），加载时从原始图片开始重放动作并校验原始高度。</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="screenshots">
+        <h2>截图预览</h2>
+        <div class="screenshots-grid">
+            <div class="hero-screenshot-placeholder">
+                <img src="screenshot-main.png" alt="主界面" />
+            </div>
+            <div class="hero-screenshot-placeholder">
+                <img src="screenshot-lines.png" alt="分割线示意" />
+            </div>
+            <div class="hero-screenshot-placeholder">
+                <img src="screenshot-export.png" alt="导出结果" />
+            </div>
+        </div>
+    </section>
+
+    <section id="usage">
+        <h2>使用说明（简要）</h2>
+        <p>更多细节请参考 GitHub 仓库中的 README.md，这里只保留核心操作说明。</p>
+
+        <div class="card" style="margin-bottom: 14px;">
+            <h3>打开图片与工程</h3>
+            <p>
+                使用“打开文件夹”或“打开文件(&O)”加载图片，程序会自动按数字序号排序并拼接为长图。
+                使用“读取工程”可恢复上一次保存的蓝线、删除区域、插入空白以及导出设置。
+            </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 14px;">
+            <h3>分割线与区域编辑</h3>
+            <p>
+                顶部固定一条 Y=0 蓝线。左键添加蓝线；右键单击删除蓝线与当前位置之间的区域；
+                右键拖拽选中一段纵向区域并高亮其中蓝线，可选择是否批量删除这些蓝线。
+                中键单击按照“插入空白高度”在当前位置插入纯白空白。
+            </p>
+        </div>
+
+        <div class="card" style="margin-bottom: 14px;">
+            <h3>导出与纯白分块处理</h3>
+            <p>
+                在导出选项中设置 Trim、Padding、宽度策略和导出格式。
+                导出时，如检测到纯白分块会提示是否导出这些分块。对已有文件将提前确认是否覆盖。
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>快捷键</h3>
+            <table class="shortcuts-table">
+                <thead>
+                    <tr>
+                        <th>操作</th>
+                        <th>快捷键</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>打开文件夹</td><td>Ctrl + Shift + O</td></tr>
+                    <tr><td>打开文件</td><td>Ctrl + O</td></tr>
+                    <tr><td>撤销</td><td>Ctrl + Z</td></tr>
+                    <tr><td>重做</td><td>Ctrl + Y</td></tr>
+                    <tr><td>放大</td><td>Ctrl + +</td></tr>
+                    <tr><td>缩小</td><td>Ctrl + -</td></tr>
+                    <tr><td>上一蓝线</td><td>Alt + ↑</td></tr>
+                    <tr><td>下一蓝线</td><td>Alt + ↓</td></tr>
+                    <tr><td>顶部</td><td>Home</td></tr>
+                    <tr><td>底部</td><td>End</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="download">
+        <h2>下载与源码</h2>
+        <div class="card">
+            <h3>GitHub 仓库</h3>
+            <p>
+                源码仓库: <a href="https://github.com/FTSTT/vbnet_image_splitter" target="_blank">https://github.com/FTSTT/vbnet_image_splitter</a>
+            </p>
+            <h3>GitHub 预编译版下载</h3>
+            <p>
+                软件下载: <a href="https://github.com/FTSTT/vbnet_image_splitter/releases" target="_blank">https://github.com/FTSTT/vbnet_image_splitter/releases</a>
+            </p>
+        </div>
+    </section>
+</main>
+
+<footer>
+    vbnet_image_splitter • 作者: aCr/FTSTT • 使用 AI 协助编程完成
+    <br>
+    官网: <a href="https://ftstt.github.io/vbnet_image_splitter/" target="_blank" rel="noopener noreferrer">https://ftstt.github.io/vbnet_image_splitter/</a>
+</footer>
+</body>
+</html>
